@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Operator Desk</title>
+<style>
+  :root {
+    --ink: #1c1915;
+    --paper: #f4efe6;
+    --card: #fffdf8;
+    --line: #e4dccf;
+    --accent: #9a3412;
+    --accent-2: #1f4d3a;
+    --muted: #6f675e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Georgia, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--line);
+    background: var(--card);
+  }
+  h1 { font-size: 18px; margin: 0; letter-spacing: 0.04em; }
+  h1 span { color: var(--accent); font-weight: 600; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  button, .tab {
+    border: 1px solid var(--line);
+    background: var(--card);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+  }
+  button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  main { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 68px); }
+  aside, section { padding: 18px; }
+  aside { border-right: 1px solid var(--line); }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+  input, select, textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font: inherit;
+    background: #fff;
+  }
+  table { width: 100%; border-collapse: collapse; background: var(--card); }
+  th, td { border-bottom: 1px solid var(--line); padding: 8px; text-align: left; font-size: 14px; }
+  td input { width: 100%; }
+  .row-actions { width: 36px; }
+  .totals { margin-top: 12px; display: grid; grid-template-columns: 1fr auto; gap: 6px 18px; max-width: 320px; margin-left: auto; }
+  .totals strong { font-size: 18px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .jobs { display: grid; gap: 8px; }
+  .job {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+  }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #efe7db; }
+  .hidden { display: none; }
+  .banner {
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+  @media print {
+    header, aside, nav, .no-print { display: none !important; }
+    main { display: block; }
+    body { background: #fff; }
+  }
+  @media (max-width: 800px) {
+    main { grid-template-columns: 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Operator <span>Desk</span></h1>
+    <div class="sub" id="tierLabel">Operator Pages · local quote desk</div>
+  </div>
+  <nav class="no-print">
+    <button class="tab" data-view="quote">Quote</button>
+    <button class="tab" data-view="board">Jobs</button>
+    <button class="tab" data-view="follow">Follow-up</button>
+    <button class="tab" data-view="brand">Brand</button>
+    <button class="primary" id="printBtn">Print / save PDF</button>
+  </nav>
+</header>
+<main>
+  <aside class="no-print">
+    <div class="card">
+      <label>License</label>
+      <input id="license" placeholder="OP- or CMD- key" />
+      <button id="unlock" style="margin-top:8px">Unlock</button>
+      <div class="sub" id="licenseNote">Demo: OP-DEMO-349 or CMD-DEMO-1497</div>
+    </div>
+    <label>Trade template</label>
+    <select id="template"></select>
+    <label>Customer</label>
+    <input id="customer" placeholder="Name" />
+    <label>Site / phone</label>
+    <input id="site" placeholder="Address or phone" />
+    <label>Status</label>
+    <select id="status">
+      <option>Draft</option>
+      <option>Sent</option>
+      <option>Accepted</option>
+      <option>Deposit collected</option>
+      <option>In progress</option>
+      <option>Invoiced</option>
+      <option>Paid</option>
+      <option>Lost</option>
+    </select>
+    <button id="saveJob" class="primary" style="margin-top:12px;width:100%">Save job</button>
+    <button id="newJob" style="margin-top:8px;width:100%">New quote</button>
+  </aside>
+  <section>
+    <div id="view-quote">
+      <div class="banner no-print" id="gate">Operator tier: quotes and invoices. Command unlocks branding and follow-up scripts.</div>
+      <div class="card" id="sheet">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:end">
+          <div>
+            <div id="bizName" style="font-size:20px;font-weight:650">Your trade company</div>
+            <div class="sub" id="bizMeta">Missouri · Operator Desk quote</div>
+          </div>
+          <div style="text-align:right">
+            <div class="sub">Quote</div>
+            <strong id="quoteNo">QD-1001</strong>
+          </div>
+        </div>
+        <p id="custLine" style="margin:14px 0 6px"></p>
+        <table>
+          <thead>
+            <tr><th>Description</th><th>Qty</th><th>Price</th><th></th></tr>
+          </thead>
+          <tbody id="lines"></tbody>
+        </table>
+        <button class="no-print" id="addLine" style="margin-top:8px">Add line</button>
+        <div class="totals">
+          <span>Subtotal</span><span id="subtotal">$0</span>
+          <span>Tax %</span><span><input id="tax" type="number" value="8.5" step="0.1" style="width:80px" /></span>
+          <span>Tax</span><span id="taxAmt">$0</span>
+          <span>Deposit %</span><span><input id="deposit" type="number" value="30" step="1" style="width:80px" /></span>
+          <span>Deposit due</span><strong id="depositDue">$0</strong>
+          <span>Balance after deposit</span><span id="balance">$0</span>
+        </div>
+        <p class="sub" id="footerText" style="margin-top:18px">Deposit due before work starts. Balance due on completion.</p>
+      </div>
+    </div>
+    <div id="view-board" class="hidden">
+      <h2>Job board</h2>
+      <div class="jobs" id="jobList"></div>
+    </div>
+    <div id="view-follow" class="hidden">
+      <h2>Follow-up</h2>
+      <div class="card" id="followBody"></div>
+    </div>
+    <div id="view-brand" class="hidden">
+      <h2>Brand</h2>
+      <div class="card">
+        <label>Business name</label>
+        <input id="brandName" />
+        <label>City</label>
+        <input id="brandCity" placeholder="Springfield, MO" />
+        <label>Accent color</label>
+        <input id="brandColor" value="#9a3412" />
+        <label>Footer</label>
+        <textarea id="brandFooter" rows="3"></textarea>
+        <button id="saveBrand" class="primary" style="margin-top:8px">Save brand</button>
+        <p class="sub">Command tier writes brand onto every quote. Operator tier keeps the default.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+const TEMPLATES = [
+  { name: "Water heater replacement", trade: "Plumbing", default_tax_pct: 8.5, default_deposit_pct: 40, items: [
+    { description: "Labor – remove old + install new", qty: 5, unit_price: 95 },
+    { description: "Water heater – 50 gal standard", qty: 1, unit_price: 875 },
+    { description: "Expansion tank + fittings", qty: 1, unit_price: 165 },
+    { description: "Haul-away old unit", qty: 1, unit_price: 75 },
+    { description: "Permit fee (pass-through)", qty: 1, unit_price: 95 },
+    { description: "Trip fee", qty: 1, unit_price: 49 }
+  ]},
+  { name: "Drain clean", trade: "Plumbing", default_tax_pct: 8.5, default_deposit_pct: 0, items: [
+    { description: "Service call", qty: 1, unit_price: 89 },
+    { description: "Main line cable", qty: 1, unit_price: 225 }
+  ]},
+  { name: "Fixture install", trade: "Plumbing", default_tax_pct: 8.5, default_deposit_pct: 30, items: [
+    { description: "Labor", qty: 2, unit_price: 95 },
+    { description: "Fixture (customer supplied or allowance)", qty: 1, unit_price: 180 }
+  ]},
+  { name: "HVAC tune-up", trade: "HVAC", default_tax_pct: 8.5, default_deposit_pct: 0, items: [
+    { description: "Seasonal tune-up", qty: 1, unit_price: 149 },
+    { description: "Filter", qty: 1, unit_price: 28 }
+  ]},
+  { name: "HVAC diagnostic", trade: "HVAC", default_tax_pct: 8.5, default_deposit_pct: 0, items: [
+    { description: "Diagnostic fee (credited if repaired)", qty: 1, unit_price: 99 }
+  ]},
+  { name: "Panel / outlet", trade: "Electrical", default_tax_pct: 8.5, default_deposit_pct: 40, items: [
+    { description: "Labor", qty: 4, unit_price: 110 },
+    { description: "Materials allowance", qty: 1, unit_price: 240 },
+    { description: "Permit", qty: 1, unit_price: 85 }
+  ]},
+  { name: "Ceiling fan", trade: "Electrical", default_tax_pct: 8.5, default_deposit_pct: 30, items: [
+    { description: "Install ceiling fan", qty: 1, unit_price: 165 },
+    { description: "Fan allowance", qty: 1, unit_price: 120 }
+  ]},
+  { name: "Weekly landscape", trade: "Landscape", default_tax_pct: 0, default_deposit_pct: 0, items: [
+    { description: "Weekly mow / edge / blow", qty: 4, unit_price: 55 }
+  ]},
+  { name: "Handyman half day", trade: "Handyman", default_tax_pct: 8.5, default_deposit_pct: 30, items: [
+    { description: "Half-day labor", qty: 1, unit_price: 280 },
+    { description: "Materials allowance", qty: 1, unit_price: 60 }
+  ]},
+  { name: "General service call", trade: "General", default_tax_pct: 8.5, default_deposit_pct: 0, items: [
+    { description: "Service call", qty: 1, unit_price: 89 }
+  ]}
+];
+
+const SCRIPTS = {
+  sent: "Day 1 text: This is {biz}. Quote {no} for {job} is ready. Deposit to lock the date is {dep}. Reply YES and I will hold Thursday.",
+  silent: "Day 3: Still holding a slot for {job}. Price stands through Friday. Want me to leave it, or should I release the date?",
+  accepted: "Deposit text: Thanks. Deposit is {dep}. Cash, check, or card on site before we unload. Balance on completion.",
+  done: "Invoice text: Job is finished. Balance {bal}. Pay today and I will send the receipt. Review link goes out after payment."
+};
+
+const money = n => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+const state = JSON.parse(localStorage.getItem("opdesk") || "{}");
+state.jobs = state.jobs || [];
+state.brand = state.brand || { name: "Your trade company", city: "Missouri", color: "#9a3412", footer: "Deposit due before work starts. Balance due on completion." };
+state.tier = state.tier || "operator";
+state.seq = state.seq || 1001;
+
+function persist() { localStorage.setItem("opdesk", JSON.stringify(state)); }
+function tierIsCommand() { return state.tier === "command"; }
+
+const templateSel = document.getElementById("template");
+TEMPLATES.forEach((t, i) => {
+  const o = document.createElement("option");
+  o.value = i;
+  o.textContent = t.trade + " — " + t.name;
+  templateSel.appendChild(o);
+});
+
+let lines = [];
+function renderLines() {
+  const tb = document.getElementById("lines");
+  tb.innerHTML = "";
+  lines.forEach((line, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td><input data-i="${i}" data-k="description" value="${line.description.replace(/"/g, """)}" /></td>
+      <td><input data-i="${i}" data-k="qty" type="number" value="${line.qty}" /></td>
+      <td><input data-i="${i}" data-k="unit_price" type="number" value="${line.unit_price}" /></td>
+      <td class="row-actions"><button data-del="${i}">×</button></td>`;
+    tb.appendChild(tr);
+  });
+  calc();
+}
+function calc() {
+  const sub = lines.reduce((s, l) => s + Number(l.qty) * Number(l.unit_price), 0);
+  const taxPct = Number(document.getElementById("tax").value) || 0;
+  const depPct = Number(document.getElementById("deposit").value) || 0;
+  const tax = sub * taxPct / 100;
+  const total = sub + tax;
+  const dep = total * depPct / 100;
+  document.getElementById("subtotal").textContent = money(sub);
+  document.getElementById("taxAmt").textContent = money(tax);
+  document.getElementById("depositDue").textContent = money(dep);
+  document.getElementById("balance").textContent = money(total - dep);
+  return { sub, tax, total, dep };
+}
+function loadTemplate(i) {
+  const t = TEMPLATES[i];
+  lines = t.items.map(x => ({ ...x }));
+  document.getElementById("tax").value = t.default_tax_pct;
+  document.getElementById("deposit").value = t.default_deposit_pct;
+  document.getElementById("quoteNo").textContent = "QD-" + state.seq;
+  renderLines();
+}
+templateSel.onchange = () => loadTemplate(templateSel.value);
+document.getElementById("lines").addEventListener("input", e => {
+  const el = e.target;
+  if (!el.dataset.k) return;
+  const row = lines[el.dataset.i];
+  row[el.dataset.k] = el.dataset.k === "description" ? el.value : Number(el.value);
+  calc();
+});
+document.getElementById("lines").addEventListener("click", e => {
+  if (e.target.dataset.del == null) return;
+  lines.splice(Number(e.target.dataset.del), 1);
+  renderLines();
+});
+document.getElementById("addLine").onclick = () => {
+  lines.push({ description: "Line item", qty: 1, unit_price: 0 });
+  renderLines();
+};
+document.getElementById("tax").oninput = calc;
+document.getElementById("deposit").oninput = calc;
+
+function applyBrand() {
+  document.getElementById("bizName").textContent = state.brand.name;
+  document.getElementById("bizMeta").textContent = state.brand.city + " · Operator Desk quote";
+  document.getElementById("footerText").textContent = state.brand.footer;
+  document.documentElement.style.setProperty("--accent", state.brand.color || "#9a3412");
+  document.getElementById("brandName").value = state.brand.name;
+  document.getElementById("brandCity").value = state.brand.city;
+  document.getElementById("brandColor").value = state.brand.color;
+  document.getElementById("brandFooter").value = state.brand.footer;
+  document.getElementById("tierLabel").textContent = (tierIsCommand() ? "Command" : "Operator") + " · local, no account";
+}
+document.getElementById("saveBrand").onclick = () => {
+  if (!tierIsCommand()) {
+    alert("Branding is the Command tier. Unlock CMD-DEMO-1497 to edit.");
+    return;
+  }
+  state.brand = {
+    name: document.getElementById("brandName").value || "Your trade company",
+    city: document.getElementById("brandCity").value || "Missouri",
+    color: document.getElementById("brandColor").value || "#9a3412",
+    footer: document.getElementById("brandFooter").value
+  };
+  persist();
+  applyBrand();
+};
+
+function paintCustomer() {
+  const c = document.getElementById("customer").value || "Customer";
+  const s = document.getElementById("site").value;
+  document.getElementById("custLine").textContent = "Prepared for " + c + (s ? " · " + s : "");
+}
+document.getElementById("customer").oninput = paintCustomer;
+document.getElementById("site").oninput = paintCustomer;
+
+document.getElementById("saveJob").onclick = () => {
+  const totals = calc();
+  const job = {
+    id: "QD-" + state.seq,
+    customer: document.getElementById("customer").value || "Customer",
+    site: document.getElementById("site").value,
+    status: document.getElementById("status").value,
+    template: TEMPLATES[templateSel.value].name,
+    total: totals.total,
+    deposit: totals.dep,
+    lines
+  };
+  state.jobs.unshift(job);
+  state.seq += 1;
+  persist();
+  document.getElementById("quoteNo").textContent = "QD-" + state.seq;
+  renderBoard();
+  alert("Saved " + job.id);
+};
+document.getElementById("newJob").onclick = () => loadTemplate(templateSel.value);
+
+function renderBoard() {
+  const box = document.getElementById("jobList");
+  box.innerHTML = state.jobs.length ? "" : "<p class='sub'>No saved jobs yet.</p>";
+  state.jobs.forEach(j => {
+    const d = document.createElement("div");
+    d.className = "job";
+    d.innerHTML = `<div><strong>${j.id}</strong> · ${j.customer}<div class="sub">${j.template} · ${money(j.total)}</div></div><span class="pill">${j.status}</span>`;
+    box.appendChild(d);
+  });
+}
+
+function renderFollow() {
+  const body = document.getElementById("followBody");
+  if (!tierIsCommand()) {
+    body.innerHTML = "<p>Follow-up scripts ship with Command. Unlock to use them on the job you just saved.</p>";
+    return;
+  }
+  const last = state.jobs[0];
+  const fill = s => s
+    .replaceAll("{biz}", state.brand.name)
+    .replaceAll("{no}", last ? last.id : "QD-1001")
+    .replaceAll("{job}", last ? last.template : "the job")
+    .replaceAll("{dep}", last ? money(last.deposit) : "$0")
+    .replaceAll("{bal}", last ? money(last.total - last.deposit) : "$0");
+  body.innerHTML = Object.entries(SCRIPTS).map(([k, v]) => `<p><strong>${k}</strong><br>${fill(v)}</p>`).join("");
+}
+
+document.getElementById("unlock").onclick = () => {
+  const key = document.getElementById("license").value.trim().toUpperCase();
+  if (key.startsWith("CMD-")) state.tier = "command";
+  else if (key.startsWith("OP-")) state.tier = "operator";
+  else return alert("Key should start with OP- or CMD-");
+  persist();
+  applyBrand();
+  renderFollow();
+  document.getElementById("licenseNote").textContent = "Unlocked: " + state.tier;
+};
+
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.onclick = () => {
+    ["quote", "board", "follow", "brand"].forEach(v => {
+      document.getElementById("view-" + v).classList.toggle("hidden", v !== btn.dataset.view);
+    });
+    if (btn.dataset.view === "follow") renderFollow();
+    if (btn.dataset.view === "board") renderBoard();
+  };
+});
+document.getElementById("printBtn").onclick = () => window.print();
+
+loadTemplate(0);
+applyBrand();
+paintCustomer();
+renderBoard();
+</script>
+</body>
+</html>
